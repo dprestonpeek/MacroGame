@@ -8,7 +8,7 @@ public class MovementController : MonoBehaviour
     Direction direction = Direction.Right;
 
     [SerializeField]
-    Rigidbody rb;
+    public Rigidbody rb;
 
     [SerializeField]
     AnimationController anim;
@@ -61,13 +61,13 @@ public class MovementController : MonoBehaviour
     private int fallSpeed = 3;
 
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         
     }
 
     // Update is called once per frame
-    void Update()
+    public void Update()
     {
         if (allowMovement)
         {

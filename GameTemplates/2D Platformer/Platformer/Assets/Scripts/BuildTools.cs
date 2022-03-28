@@ -7,6 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[ExecuteInEditMode]
 public class BuildTools
 {
     private EditorWindow TextBoxInput;
@@ -31,6 +32,22 @@ public class BuildTools
 
         PrefabUtility.InstantiatePrefab(floor);
     }
+
+    [MenuItem("MacroBunny/Add/Player")]
+    public static void AddPlayer()
+    {
+        GameObject playerParent = new GameObject("PlayerParent");
+        GameObject player = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        player.name = "Player";
+        player.transform.localScale = new Vector3(1, 2, 1);
+        player.transform.parent = playerParent.transform;
+
+        PlayerMovement movement = player.AddComponent<PlayerMovement>();
+        movement.rb = player.AddComponent<Rigidbody>();
+        movement.rb.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
+        PlayerAnimation anim = player.AddComponent<PlayerAnimation>();
+        InputBridge bridge = player.AddComponent<InputBridge>();
+    }
 }
 
 public class NewLevel : EditorWindow
@@ -46,23 +63,20 @@ public class NewLevel : EditorWindow
             levelName = EditorGUILayout.TextField("Level Name: ", levelName);
             Scene newScene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects);
             newScene.name = levelName;
+            newScene.GetRootGameObjects()[0].AddComponent<CameraSettings>();
             string outputPath = LevelsFolder + levelName + ".unity";
             if (!Directory.Exists(LevelsFolder))
             {
                 Directory.CreateDirectory(LevelsFolder);
             }
-            bool successful = EditorSceneManager.SaveScene(newScene, outputPath);
-            EditorSceneManager.OpenScene(outputPath);
 
             foreach (GameObject go in InitDefaultObjects())
             {
                 PrefabUtility.InstantiatePrefab(go);
             }
-
-            if (successful)
-            {
-                Close();
-            }
+            EditorSceneManager.SaveScene(newScene, outputPath);
+            EditorSceneManager.OpenScene(outputPath);
+            Close();
         }
     }
 
@@ -81,7 +95,7 @@ public class NewLevel : EditorWindow
         light.type = LightType.Directional;
         light.color = Color.white;
 
-        defaultObjs[1] = lightObj;
+        defaultObjs[1] = lightObj;          //directional light
 
         return defaultObjs;
     }

@@ -5,5 +5,4 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class ScriptedFloor : ScriptedObject
 {
-
 }

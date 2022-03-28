@@ -18,18 +18,21 @@ public class ScriptedObject : MonoBehaviour
     GameObject block;
 
     [SerializeField]
-    List<GameObject> tiles;
+    List<GameObject> tiles = new List<GameObject>();
 
     private float xLength;
+    private float yLength;
     private Vector3 currPos;
     private Vector3 currScale;
+
+    public bool canAdjustHorizontal = true;
+    private bool canAdjustVertical = true;
 
     private void Awake()
     {
         currPos = transform.position;
         currScale = transform.localScale;
         xLength = Mathf.RoundToInt(transform.localScale.x);
-        tiles = new List<GameObject>();
     }
 
     private void Update()
@@ -47,7 +50,7 @@ public class ScriptedObject : MonoBehaviour
             //currScale = transform.localScale;
         }
 
-        if (xLength != tiles.Count)
+        if (xLength != tiles.Count && block != null)
         {
             if (xLength > 0)
             {
@@ -60,24 +63,85 @@ public class ScriptedObject : MonoBehaviour
 
     private void UpdateTiles()
     {
-        if (tiles.Count > xLength)
+        if (canAdjustHorizontal)
         {
-            for (int i = (int)xLength - 1; i < tiles.Count; i++)
+            //Transform[] children = blocksHolder.GetComponentsInChildren<Transform>();
+            if (tiles.Count > xLength)
+            {
+                for (int i = (int)xLength - 1; i < tiles.Count; i++)
+                {
+                    DestroyImmediate(tiles[i].gameObject);
+                    tiles.RemoveAt(i);
+                }
+            }
+            else if (tiles.Count < xLength)
+            {
+                for (int i = tiles.Count - 1; i < xLength; i++)
+                {
+                    GameObject newTile = Instantiate(block, blocksHolder.transform);
+                    tiles.Add(newTile);
+                }
+            }
+            //if (children.Length > xLength)
+            //{
+            //    for (int i = (int)xLength - 1; i < children.Length; i++)
+            //    {
+            //        DestroyImmediate(children[i].gameObject);
+            //        tiles.RemoveAt(i);
+            //    }
+            //}
+
+            for (int i = 0; i < xLength; i++)
+            {
+                if (tiles[i].Equals(null))
+                {
+                    tiles[i] = Instantiate(block, blocksHolder.transform, false);
+                }
+
+                float index = i;
+                tiles[i].transform.localPosition = new Vector2((index / (xLength)), 0);
+                tiles[i].transform.localScale = new Vector2(1 / xLength, 1);
+            }
+
+            if (xLength == 1)
+            {
+                blocksHolder.transform.localPosition = new Vector2(0, 0);
+            }
+            else if (xLength > 1)
+            {
+                blocksHolder.transform.localPosition = new Vector2((-.5f / xLength) * (xLength - 1), 0);
+            }
+        }
+        if (canAdjustVertical)
+        {
+            //AdjustVertically();
+        }
+    }
+
+    private void AdjustHorizontally()
+    {
+    }
+
+    private void AdjustVertically()
+    {
+        if (tiles.Count > yLength)
+        {
+            for (int i = (int)yLength - 1; i < tiles.Count; i++)
             {
                 DestroyImmediate(tiles[i].gameObject);
                 tiles.RemoveAt(i);
             }
         }
-        else if (tiles.Count < xLength)
+        else if (tiles.Count < yLength)
         {
-            for (int i = tiles.Count - 1; i < xLength; i++)
+            for (int i = tiles.Count - 1; i < yLength; i++)
             {
                 GameObject newTile = Instantiate(block, blocksHolder.transform);
                 tiles.Add(newTile);
             }
         }
 
-        for (int i = 0; i < xLength; i++)
+        for (int i = 0; i < yLength; i++)
         {
             if (tiles[i].Equals(null))
             {
@@ -85,17 +149,17 @@ public class ScriptedObject : MonoBehaviour
             }
 
             float index = i;
-            tiles[i].transform.localPosition = new Vector2((index / (xLength)), 0);
-            tiles[i].transform.localScale = new Vector2(1 / xLength, 1);
+            tiles[i].transform.localPosition = new Vector2((index / (yLength)), 0);
+            tiles[i].transform.localScale = new Vector2(1 / yLength, 1);
         }
 
-        if (xLength == 1)
+        if (yLength == 1)
         {
             blocksHolder.transform.localPosition = new Vector2(0, 0);
         }
-        else if (xLength > 1)
+        else if (yLength > 1)
         {
-            blocksHolder.transform.localPosition = new Vector2((-.5f / xLength) * (xLength - 1), 0);
+            blocksHolder.transform.localPosition = new Vector2(0, (-.5f / yLength) * (yLength - 1));
         }
     }
 
