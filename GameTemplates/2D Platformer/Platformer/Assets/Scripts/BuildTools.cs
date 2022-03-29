@@ -33,6 +33,20 @@ public class BuildTools
         PrefabUtility.InstantiatePrefab(floor);
     }
 
+    [MenuItem("MacroBunny/Add/Scripted Object/Wall")]
+    public static void AddScriptedWall()
+    {
+        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = "ScriptedWall";
+
+        ScriptedWall scriptedWall = wall.AddComponent<ScriptedWall>();
+        GameObject blocks = new GameObject("Blocks");
+        scriptedWall.blocksHolder = blocks;
+        blocks.transform.parent = wall.transform;
+
+        PrefabUtility.InstantiatePrefab(wall);
+    }
+
     [MenuItem("MacroBunny/Add/Player")]
     public static void AddPlayer()
     {
