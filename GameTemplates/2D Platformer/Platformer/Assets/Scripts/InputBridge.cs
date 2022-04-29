@@ -28,8 +28,8 @@ public class InputBridge : MonoBehaviour
 
     public Gamepad gamepad;
 
+    public int playerId = 0;
     int m_StickId;
-    int playerId = 0;
 
     bool initialized = false;
     bool pausedThisFrame = false;
@@ -51,6 +51,24 @@ public class InputBridge : MonoBehaviour
 
     private void Initialize()
     {
+        InputBridge[] bridges = FindObjectsOfType<InputBridge>();
+        Gamepad[] gamepads = Gamepad.all.ToArray();
+        for (int i = 0; i < gamepads.Length; i++)
+        {
+            try
+            {
+                bridges[i].playerId = i;
+            }
+            catch(Exception e) 
+            {
+                Debug.Log("Fuck!");
+            }
+            if (bridges.Length == gamepads.Length)
+            {
+
+            }
+            playerId = i;
+        }
         // Stick ID is the player ID + 1
         m_StickId = playerId;
         gamepad = Gamepad.current;
