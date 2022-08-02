@@ -123,7 +123,7 @@ public class InputBridge : MonoBehaviour
         }
         else
         {
-            GameInput.jump = keyboard.spaceKey.isPressed;
+            GameInput.jump = keyboard.spaceKey.isPressed || keyboard.upArrowKey.isPressed;
             GameInput.action2 = keyboard.qKey.isPressed;
             GameInput.action1 = keyboard.eKey.isPressed;
             GameInput.crouch = keyboard.cKey.isPressed || keyboard.leftAltKey.isPressed;

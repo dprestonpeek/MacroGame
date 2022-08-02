@@ -18,11 +18,8 @@ public class CameraSettings : MonoBehaviour
     [Range(0,.5f)]
     private float camXSpeed;
     [SerializeField]
-    [Range(0, .5f)]
+    [Range(0, .25f)]
     private float camYSpeed;
-
-    [SerializeField]
-    private float ceiling = 3;
     [SerializeField]
     private float floor = 3;
 
@@ -35,18 +32,26 @@ public class CameraSettings : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        JankyFollow();
+        if (Application.isPlaying && followPlayer)
+        {
+            FollowPlayer();
+        }
+    }
+
+    public void SetNewFloor(int newFloor)
+    {
+        floor = newFloor;
     }
 
     private void LateUpdate()
     {
         if (Application.isPlaying && followPlayer)
         {
-            JankyFollowLate();
+            FollowPlayerLate();
         }
     }
 
-    private void JankyFollow()
+    private void FollowPlayer()
     {
         //There is one player
         if (players.Length == 1)
@@ -71,7 +76,7 @@ public class CameraSettings : MonoBehaviour
         }
     }
 
-    private void JankyFollowLate()
+    private void FollowPlayerLate()
     {
         Vector3 newPos = new Vector3(target.x + camOffset.x, target.y + camOffset.y, -10);
         newPos = ClampToLimits(newPos);
@@ -88,7 +93,7 @@ public class CameraSettings : MonoBehaviour
     Vector3 ClampToLimits(Vector3 position)
     {
         //ceiling = players[0].newCeiling;
-        floor = 0;// players[0].newFloor;
+        //floor = 0;// players[0].newFloor;
 
         position.y = Mathf.Lerp(position.y, floor, camYSpeed);
         //if (position.y > ceiling)

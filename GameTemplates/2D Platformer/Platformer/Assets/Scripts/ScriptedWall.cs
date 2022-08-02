@@ -38,11 +38,12 @@ public class ScriptedWall : ScriptedObject
     {
         base.UpdateTiles();
 
-        if (yLength != tiles.Count && block != null)
+        if (yLength != tiles.Count && block != null) //if the tiles have been adjusted
         {
-            if (yLength > 0)
+            if (yLength > 0) //don't allow negative expansion
             {
-                if (tiles.Count > yLength)
+                //before updating the tiles, compare the list of virtual tiles to the tangible objects.
+                if (tiles.Count > yLength) //if there are more virtual tiles than tangible objects, remove the extras
                 {
                     for (int i = (int)yLength - 1; i < tiles.Count; i++)
                     {
@@ -50,7 +51,7 @@ public class ScriptedWall : ScriptedObject
                         tiles.RemoveAt(i);
                     }
                 }
-                else if (tiles.Count < yLength)
+                else if (tiles.Count < yLength) //if there are less virtual tiles than tangible objects, create the missing objects
                 {
                     for (int i = tiles.Count - 1; i < yLength; i++)
                     {
@@ -60,18 +61,21 @@ public class ScriptedWall : ScriptedObject
                     }
                 }
 
+                //now that the list matches the object, create new tiles according to new adjustments
                 for (int i = 0; i < yLength; i++)
                 {
-                    if (tiles[i].Equals(null))
+                    if (tiles[i].Equals(null)) //if the tile became null, reinstantiate it
                     {
                         tiles[i] = Instantiate(block, blocksHolder.transform, false);
                     }
 
+                    //adjust position and scale to accommodate any new or removed tiles
                     float index = i;
                     tiles[i].transform.localPosition = new Vector2(0, index / yLength);
                     tiles[i].transform.localScale = new Vector2(1, 1 / yLength);
                 }
 
+                //center the tile if only 1 exists, otherwise align to grid
                 if (yLength == 1)
                 {
                     blocksHolder.transform.localPosition = new Vector2(0, 0);

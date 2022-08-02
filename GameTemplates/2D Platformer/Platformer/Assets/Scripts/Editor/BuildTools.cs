@@ -51,4 +51,10 @@ public class BuildTools
     {
         CameraTools.AddCameraBuffer();
     }
+
+    [MenuItem("MacroBunny/Add/Camera Reposition Trigger")]
+    public static void AddCameraRepositionTrigger()
+    {
+        CameraTools.AddCameraRepositionTrigger();
+    }
 }

@@ -92,7 +92,10 @@ public class ScriptedObject : MonoBehaviour
         currPos = transform.position;
     }
 
-    public virtual void UseRectTool() { }
+    public virtual void UseRectTool() 
+    {
+        UseMoveTool();
+    }
     public virtual void UpdateTiles() 
     {
         try
@@ -138,13 +141,29 @@ public class ScriptedObject : MonoBehaviour
     {
         if (type == ObjectType.FLOOR)
         {
-            xOffset = (-.5f / xLength) * (xLength - 1);
+            //xOffset = (-.5f / xLength) * (xLength - 1);
+            if (xLength % 2 == 0)
+            {
+                xOffset = -.5f;
+            }
+            else
+            {
+                xOffset = 0;
+            }
             yOffset = 0;
         }
         else if (type == ObjectType.WALL)
         {
             xOffset = 0;
-            yOffset = (-.5f / yLength) * (yLength - 1) + .5f / yLength;
+            //yOffset = (-.5f / yLength) * (yLength - 1) /*+ .5f / yLength*/;
+            if (yLength % 2 == 0)
+            {
+                yOffset = -.5f;
+            }
+            else
+            {
+                yOffset = 0;
+            }
         }
         float xPos = Mathf.RoundToInt(transform.position.x) + xOffset;
         float yPos = Mathf.RoundToInt(transform.position.y) + yOffset;

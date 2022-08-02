@@ -8,6 +8,11 @@ public class AnimationController : MonoBehaviour
     Animator anim;
     [SerializeField]
     SpriteRenderer sprite;
+
+    [SerializeField] //for temp use until sprite is set
+    GameObject player;
+
+    private bool animate = false;
     
     // Start is called before the first frame update
     void Start()
@@ -18,15 +23,23 @@ public class AnimationController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (sprite = null)
+        if (sprite == null)
         {
             sprite = GetComponent<SpriteRenderer>();
+            animate = true;
         }
     }
 
     public void SetDirection(bool right)
     {
-        sprite.flipX = !right;
+        if (animate)
+        {
+            sprite.flipX = !right;
+        }
+        else
+        {
+            player.transform.localEulerAngles = Vector3.up * (right ? 0 : 180);
+        }
     }
 
     public void Walk(bool walking)

@@ -38,11 +38,12 @@ public class ScriptedFloor : ScriptedObject
     {
         base.UpdateTiles();
 
-        if (xLength != tiles.Count && block != null)
+        if (xLength != tiles.Count && block != null) //if the tiles have been adjusted
         {
-            if (xLength > 0)
+            if (xLength > 0) //don't allow negative expansion
             {
-                if (tiles.Count > xLength)
+                //before updating the tiles, compare the list of virtual tiles to the tangible objects.
+                if (tiles.Count > xLength) //if there are more virtual tiles than tangible objects, remove the extras
                 {
                     for (int i = (int)xLength - 1; i < tiles.Count; i++)
                     {
@@ -50,7 +51,7 @@ public class ScriptedFloor : ScriptedObject
                         tiles.RemoveAt(i);
                     }
                 }
-                else if (tiles.Count < xLength)
+                else if (tiles.Count < xLength) //if there are less virtual tiles than tangible objects, create the missing objects
                 {
                     for (int i = tiles.Count - 1; i < xLength; i++)
                     {
@@ -60,26 +61,31 @@ public class ScriptedFloor : ScriptedObject
                     }
                 }
 
+                //now that the list matches the object, create new tiles according to new adjustments
                 for (int i = 0; i < xLength; i++)
                 {
-                    if (tiles[i].Equals(null))
+                    if (tiles[i].Equals(null)) //if the tile became null, reinstantiate it
                     {
                         tiles[i] = Instantiate(block, blocksHolder.transform, false);
                     }
 
+                    //adjust position and scale to accommodate any new or removed tiles
+
                     float index = i;
-                    tiles[i].transform.localPosition = new Vector3(index / xLength, 0);
-                    tiles[i].transform.localScale = new Vector2(1 / xLength, 1);
+                    tiles[i].transform.localPosition = new Vector3(index / xLength, 0); //ensures tiles are equidistant
+                    tiles[i].transform.localScale = new Vector2(1 / xLength, 1); //ensures parent size matches tile size
                 }
 
-                if (xLength == 1)
-                {
-                    blocksHolder.transform.localPosition = new Vector3(0, 0, 0);
-                }
-                else if (xLength > 1)
-                {
-                    blocksHolder.transform.localPosition = new Vector3((-.5f / xLength) * (xLength - 1) + 1/xLength, 0, 0);
-                }
+                //center the tile if only 1 exists, otherwise align to grid
+                //if (xLength == 1)
+                //{
+                //    blocksHolder.transform.localPosition = new Vector3(0, 0, 0);
+                //}
+                //else if (xLength > 1)
+                //{
+                //    blocksHolder.transform.localPosition = new Vector3((-.5f / xLength) * (xLength - 1) /* + 1/xLength*/, 0, 0);
+                //}
+                blocksHolder.transform.localPosition = new Vector3((-.5f / xLength) * (xLength - 1) /* + 1/xLength*/, 0, 0);
             }
         }
     }

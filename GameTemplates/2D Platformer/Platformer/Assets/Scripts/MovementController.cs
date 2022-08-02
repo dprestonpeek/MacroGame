@@ -19,17 +19,22 @@ public class MovementController : MonoBehaviour
     [SerializeField]
     bool allowMovement = true;
 
+    [SerializeField]
+    bool allowSkidding = true;
+
 
     private CapsuleCollider collider;
 
-    private bool Grounded = false;
+    public bool Grounded = false;
+    public bool Walled = false;
     private bool Walking = false;
     private bool Jumping = false;
     private bool Falling = false;
     private bool JumpHold = false;
     private bool CanJump = false;
-    public bool Skidding = false;
-    public bool Rolling = false;
+    private bool Skidding = false;
+    private bool Rolling = false;
+    public bool Juking = false;
 
 
     [SerializeField]
@@ -44,18 +49,18 @@ public class MovementController : MonoBehaviour
     private int walkSpeed = 7;
     [SerializeField]
     [Range(1, 10)]
-    private int joystickWalkAcceleration = 5;
+    public int joystickWalkAcceleration = 5;
     [SerializeField]
     [Range(1, 10)]
-    private int keyboardWalkAcceleration = 1;
+    public int keyboardWalkAcceleration = 1;
     [Range(1, 10)]
-    private int walkAcceleration = 5;
+    public int walkAcceleration = 5;
+    //[SerializeField]
+    //[Range(1, 10)]
+    //private int skidTolerance = 5;
     [SerializeField]
     [Range(1, 10)]
-    private int skidTolerance = 5;
-    [SerializeField]
-    [Range(1, 10)]
-    private int rollTolerance = 5;
+    private int rollTolerance = 1;
 
     [SerializeField]
     [Range(1, 10)]
@@ -67,10 +72,8 @@ public class MovementController : MonoBehaviour
     [Range(1, 15)]
     private int fallSpeed = 3;
 
-    private InputBridge.Input input;
-
     // Start is called before the first frame update
-    public void Start()
+    public virtual void Start()
     {
         collider = GetComponentInChildren<CapsuleCollider>();
         anim = GetComponentInChildren<AnimationController>();
@@ -79,32 +82,20 @@ public class MovementController : MonoBehaviour
     // Update is called once per frame
     public virtual void Update()
     {
-        CheckInput();
         if (allowMovement)
         {
             Grounded = IsGrounded();
-            CheckWalk();
-            CheckJump();
-            UpdateVelocity();
+            Walled = IsWalled();
         }
     }
 
-    void CheckInput()
+    public virtual void LateUpdate()
     {
-        input = InputBridge.Instance.input;
-        if (input == InputBridge.Input.Gamepad)
-        {
-            walkAcceleration = joystickWalkAcceleration;
-        }
-        else
-        {
-            walkAcceleration = keyboardWalkAcceleration;
-        }
+        UpdateVelocity();
     }
 
-    void CheckWalk()
+    public void CheckAndDoWalk(float horizInputMovement)
     {
-        float horizInputMovement = GameInput.movementAxes.x;
         Direction oldDir = direction;
         float oldVel = Mathf.Abs(playerVelocity.x);
         direction = CalculateDirection(horizInputMovement);
@@ -159,14 +150,7 @@ public class MovementController : MonoBehaviour
         }
     }
 
-    IEnumerator DoSkid()
-    {
-        Skidding = true;
-        yield return new WaitForSeconds((float)skidTolerance / 10);
-        Skidding = false;
-    }
-
-    void CheckJump()
+    public void CheckAndDoJump(bool jump)
     {
         if (playerVelocity.y > .1f)
         {
@@ -192,7 +176,7 @@ public class MovementController : MonoBehaviour
             ForceFall();
         }
 
-        if (GameInput.jump)
+        if (jump)
         {
             if (Grounded && !Jumping && !Falling && !JumpHold)
             {
@@ -223,7 +207,7 @@ public class MovementController : MonoBehaviour
         playerVelocity = new Vector2(Mathf.Round(rb.velocity.x), Mathf.Round(rb.velocity.y));
     }
 
-    public void Walk(float dir)
+    private void Walk(float dir)
     {
         float gradualWalkSpeed = Mathf.Lerp(Mathf.Abs(rb.velocity.x), walkSpeed, (float)walkAcceleration / 10);
         if (gradualWalkSpeed > 5)
@@ -244,47 +228,36 @@ public class MovementController : MonoBehaviour
         rb.velocity = newVelocity;
     }
 
-    public void Skid()
+    private void Skid()
     {
-        rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0, 1 / skidTolerance), rb.velocity.y);
-        if (Mathf.Abs(rb.velocity.x) <= .1f)
+        if (allowSkidding)
+        {
+            rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0, 1 / 2), rb.velocity.y);
+            if (Mathf.Abs(rb.velocity.x) <= .1f)
+            {
+                Skidding = false;
+            }
+        }
+        else
         {
             Skidding = false;
         }
     }
 
-    public void Roll()
+    private void Roll()
     {
         if (rollTolerance == 1)
             return;
 
-        //float newVelocityX = 0;
-        //if (direction == Direction.Right)
-        //{
-        //    newVelocityX = rb.velocity.x - (1 / rollTolerance);
-        //    if (newVelocityX < 0)
-        //    {
-        //        newVelocityX = 0;
-        //    }
-        //}
-        //else
-        //{
-        //    newVelocityX = rb.velocity.x + (1 / rollTolerance);
-        //    if (newVelocityX > 0)
-        //    {
-        //        newVelocityX = 0;
-        //    }
-        //}
-
         rb.velocity = new Vector2(rollSpeed, rb.velocity.y);
     }
 
-    public void Jump(float force)
+    private void Jump(float force)
     {
         rb.AddForce(Vector2.up * force, ForceMode.Impulse);
     }
 
-    public void HitGround()
+    private void HitGround()
     {
         //jumpVelocity = 0;
         jumpCount = 0;
@@ -335,7 +308,7 @@ public class MovementController : MonoBehaviour
         return (float)direction;
     }
 
-    bool IsWalled()
+    public bool IsWalled()
     {
         RaycastHit hit;
         int layerMask = 1 << 8;
@@ -343,7 +316,7 @@ public class MovementController : MonoBehaviour
 
         float offset = collider.height / (2 + (2/3)); //.75 for a height of 2
         Vector3 offsetUp = new Vector3(transform.position.x, transform.position.y + offset);
-        Vector3 offsetDown = new Vector3(transform.position.x, transform.position.y - offset);
+        Vector3 offsetDown = new Vector3(transform.position.x, transform.position.y - (offset - .1f));
         Vector3[] rayPos = new Vector3[] { transform.position, offsetUp, offsetDown };
 
         float dir = CalculateDirection(direction);
@@ -365,7 +338,7 @@ public class MovementController : MonoBehaviour
         return false;
     }
 
-    bool IsGrounded()
+    public bool IsGrounded()
     {
         RaycastHit hit;
         int layerMask = 1 << 8;
