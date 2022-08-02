@@ -12,13 +12,21 @@ public class AnimationController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        sprite = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (sprite = null)
+        {
+            sprite = GetComponent<SpriteRenderer>();
+        }
+    }
 
+    public void SetDirection(bool right)
+    {
+        sprite.flipX = !right;
     }
 
     public void Walk(bool walking)

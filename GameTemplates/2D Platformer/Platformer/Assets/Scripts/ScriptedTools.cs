@@ -6,6 +6,7 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class ScriptedTools
 {
+#if UNITY_EDITOR
     public static void RemoveExtraObjects()
     {
         ScriptedObject[] objects = GameObject.FindObjectsOfType<ScriptedObject>();
@@ -57,4 +58,5 @@ public class ScriptedTools
 
         PrefabUtility.InstantiatePrefab(rect);
     }
+#endif
 }

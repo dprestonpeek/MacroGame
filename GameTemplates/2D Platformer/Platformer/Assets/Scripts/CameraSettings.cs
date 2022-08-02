@@ -29,12 +29,25 @@ public class CameraSettings : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        players = FindObjectsOfType<PlayerMovement>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        players = FindObjectsOfType<PlayerMovement>();
+        JankyFollow();
+    }
+
+    private void LateUpdate()
+    {
+        if (Application.isPlaying && followPlayer)
+        {
+            JankyFollowLate();
+        }
+    }
+
+    private void JankyFollow()
+    {
         //There is one player
         if (players.Length == 1)
         {
@@ -58,27 +71,24 @@ public class CameraSettings : MonoBehaviour
         }
     }
 
-    private void LateUpdate()
+    private void JankyFollowLate()
     {
-        if (Application.isPlaying && followPlayer)
-        {
-            Vector3 newPos = new Vector3(target.x + camOffset.x, target.y + camOffset.y, -10);
-            newPos = ClampToLimits(newPos);
+        Vector3 newPos = new Vector3(target.x + camOffset.x, target.y + camOffset.y, -10);
+        newPos = ClampToLimits(newPos);
 
-            float xLerp = Mathf.Lerp(transform.position.x, newPos.x, camXSpeed);
-            float yLerp = Mathf.Lerp(transform.position.y, newPos.y, camYSpeed);
+        float xLerp = Mathf.Lerp(transform.position.x, newPos.x, camXSpeed);
+        float yLerp = Mathf.Lerp(transform.position.y, newPos.y, camYSpeed);
 
-            newPos.x = xLerp;
-            newPos.y = yLerp;
+        newPos.x = xLerp;
+        newPos.y = yLerp;
 
-            transform.position = ClampToLimits(Vector3.Lerp(transform.position, newPos, camXSpeed));
-        }
+        transform.position = ClampToLimits(Vector3.Lerp(transform.position, newPos, camXSpeed));
     }
 
     Vector3 ClampToLimits(Vector3 position)
     {
         //ceiling = players[0].newCeiling;
-        floor = players[0].newFloor;
+        floor = 0;// players[0].newFloor;
 
         position.y = Mathf.Lerp(position.y, floor, camYSpeed);
         //if (position.y > ceiling)

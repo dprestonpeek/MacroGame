@@ -24,11 +24,14 @@ public class InputBridge : MonoBehaviour
             return _instance;
         }
     }
-    private static InputBridge _instance;
-
-    public Gamepad gamepad;
-
+    public enum Input { Gamepad, Keyboard };
+    public Input input = Input.Keyboard;
     public int playerId = 0;
+
+    private static InputBridge _instance;
+    private Gamepad gamepad;
+    private Keyboard keyboard;
+
     int m_StickId;
 
     bool initialized = false;
@@ -72,16 +75,27 @@ public class InputBridge : MonoBehaviour
         // Stick ID is the player ID + 1
         m_StickId = playerId;
         gamepad = Gamepad.current;
-        if (gamepad != null)
-            initialized = true;
+        keyboard = Keyboard.current;
+
+        if (initialized = gamepad != null)
+        {
+            input = Input.Gamepad;
+        }
     }
 
     private void Thumbsticks()
     {
         if (gamepad != null)
         {
-            GameInput.lJoystick = new Vector2(gamepad.leftStick.x.ReadValue(), gamepad.leftStick.y.ReadValue());
-            GameInput.rJoystick = new Vector2(gamepad.rightStick.x.ReadValue(), gamepad.rightStick.y.ReadValue());
+            GameInput.movementAxes = new Vector2(gamepad.leftStick.x.ReadValue(), gamepad.leftStick.y.ReadValue());
+            GameInput.visualAxes = new Vector2(gamepad.rightStick.x.ReadValue(), gamepad.rightStick.y.ReadValue());
+        }
+        else
+        {
+            float horizontal = keyboard.rightArrowKey.ReadValue() - keyboard.leftArrowKey.ReadValue();
+            float vertical = keyboard.upArrowKey.ReadValue() - keyboard.downArrowKey.ReadValue();
+            GameInput.movementAxes = new Vector2(horizontal, vertical);
+            GameInput.visualAxes = Vector2.zero;
         }
     }
 
@@ -89,7 +103,7 @@ public class InputBridge : MonoBehaviour
     {
         if (gamepad != null)
         {
-            GameInput.dPad = gamepad.dpad.ReadValue();
+            GameInput.secondaryMovementAxes = gamepad.dpad.ReadValue();
         }
     }
 
@@ -97,15 +111,27 @@ public class InputBridge : MonoBehaviour
     {
         if (gamepad != null)
         {
-            GameInput.cross = gamepad.aButton.isPressed;
-            GameInput.square = gamepad.squareButton.isPressed;
-            GameInput.triangle = gamepad.triangleButton.isPressed;
-            GameInput.circle = gamepad.circleButton.isPressed;
+            GameInput.jump = gamepad.aButton.isPressed;
+            GameInput.action2 = gamepad.squareButton.isPressed;
+            GameInput.action1 = gamepad.triangleButton.isPressed;
+            GameInput.crouch = gamepad.circleButton.isPressed;
 
-            GameInput.lShoulder = gamepad.leftShoulder.isPressed;
-            GameInput.rShoulder = gamepad.rightShoulder.isPressed;
-            GameInput.lTrigger = gamepad.leftTrigger.ReadValue();
-            GameInput.rTrigger = gamepad.rightTrigger.ReadValue();
+            GameInput.bumpLeft = gamepad.leftShoulder.isPressed;
+            GameInput.bumpRight = gamepad.rightShoulder.isPressed;
+            GameInput.aim = gamepad.leftTrigger.ReadValue();
+            GameInput.fire = gamepad.rightTrigger.ReadValue();
+        }
+        else
+        {
+            GameInput.jump = keyboard.spaceKey.isPressed;
+            GameInput.action2 = keyboard.qKey.isPressed;
+            GameInput.action1 = keyboard.eKey.isPressed;
+            GameInput.crouch = keyboard.cKey.isPressed || keyboard.leftAltKey.isPressed;
+
+            GameInput.bumpLeft = keyboard.zKey.isPressed;
+            GameInput.bumpRight = keyboard.xKey.isPressed;
+            GameInput.aim = keyboard.shiftKey.isPressed ? 1 : 0;
+            GameInput.fire = keyboard.ctrlKey.isPressed ? 1 : 0;
         }
     }
 
@@ -113,15 +139,15 @@ public class InputBridge : MonoBehaviour
     {
         if (gamepad != null)
         {
-            GameInput.startButton = gamepad.startButton.isPressed;
+            GameInput.pause = gamepad.startButton.isPressed;
         }
     }
 
     private void PauseGame()
     {
-        if (GameInput.pauseGame && Time.timeScale == 1)
+        if (GameInput.freezeTime && Time.timeScale == 1)
             pausedThisFrame = true;
-        else if (GameInput.pauseGame && Time.timeScale == 0)
+        else if (GameInput.freezeTime && Time.timeScale == 0)
             unpausedThisFrame = true;
 
         if (pausedThisFrame)
@@ -133,18 +159,18 @@ public class InputBridge : MonoBehaviour
 
 public class GameInput
 {
-    public static Vector2 lJoystick;
-    public static Vector2 rJoystick;
-    public static Vector2 dPad;
+    public static Vector2 movementAxes; //left joystick
+    public static Vector2 visualAxes;  //right joystick
+    public static Vector2 secondaryMovementAxes; //d-pad
 
-    public static bool lStick, rStick;
-    public static bool cross, square, triangle, circle;
-    public static bool rShoulder, lShoulder;
-    public static float rTrigger, lTrigger;
+    public static bool uniqueLeft, uniqueRight; //left stick, right stick
+    public static bool jump, action2, action1, crouch; //Cross, Square, Triangle, Circle (A, X, Y, B)
+    public static bool bumpLeft, bumpRight; //left shoulder, right shoulder
+    public static float aim, fire; //left trigger, right trigger
 
-    public static bool startButton, selectButton;
+    public static bool pause, menu; //Start, Select/Back
 
-    public static bool pauseGame;
+    public static bool freezeTime;
 }
 
 //        ______                                 ______

@@ -41,6 +41,8 @@ public class ScriptedObject : MonoBehaviour
     private float xOffset = 0;
     private float yOffset = 0;
 
+    private Transform root = null;
+
     public virtual void Awake()
     {
         currPos = transform.position;
@@ -63,6 +65,7 @@ public class ScriptedObject : MonoBehaviour
 
     public virtual void Update()
     {
+#if UNITY_EDITOR
         xLength = Mathf.RoundToInt(transform.localScale.x);
         yLength = Mathf.RoundToInt(transform.localScale.y);
 
@@ -74,6 +77,13 @@ public class ScriptedObject : MonoBehaviour
         {
             UseRectTool();
         }
+
+        root = Selection.activeGameObject?.transform.parent?.parent?.parent;
+        if (root != null && root.name.Contains("Scripted"))
+        {
+            Selection.activeGameObject = root.gameObject;
+        }
+#endif
     }
 
     public virtual void UseMoveTool() 
