@@ -8,7 +8,7 @@ using System;
 [ExecuteInEditMode]
 public class ScriptedObject : MonoBehaviour
 {
-    public enum ObjectType { BLOCK, FLOOR, WALL, BACKGROUND, CEILING }
+    public enum ObjectType { BLOCK, FLOOR, WALL, RECT, BACKGROUND, CEILING }
     [SerializeField]
     public ObjectType type = ObjectType.BLOCK;
 
@@ -78,10 +78,37 @@ public class ScriptedObject : MonoBehaviour
             UseRectTool();
         }
 
-        root = Selection.activeGameObject?.transform.parent?.parent?.parent;
-        if (root != null && root.name.Contains("Scripted"))
+        if (type == ObjectType.FLOOR || type == ObjectType.WALL)
         {
-            Selection.activeGameObject = root.gameObject;
+            root = Selection.activeGameObject?.transform.parent?.parent?.parent;
+            if (root != null && root.name.Contains("Scripted"))
+            {
+                Selection.activeGameObject = root.gameObject;
+            }
+        }
+        else if (type == ObjectType.RECT)
+        {
+            //if (Selection.activeGameObject?.GetComponent<ScriptedRectParent>() != null) //if the parent object is selected
+
+            //{
+            //    ScriptedRectParent rectRoot = GetComponent<ScriptedRectParent>();
+            //    Selection.objects = rectRoot?.GetChildren();
+            //}
+            //else if (Selection.activeGameObject?.GetComponent<ScriptedRect>()   //if an actual scripted rect is selected
+            //    && Selection.objects != Selection.activeGameObject.transform.parent.gameObject.transform.GetComponentsInChildren<ScriptedRect>()) 
+            //{
+            //    root = Selection.activeGameObject.transform.parent;
+            //    ScriptedRect[] rects = root.gameObject.transform.GetComponentsInChildren<ScriptedRect>();
+            //    Selection.objects = rects;
+            //}
+            if (Selection.activeGameObject?.transform.parent?.parent?.parent) //if a block sprite is selected
+            {
+                root = Selection.activeGameObject.transform.parent.parent.parent;
+                if (root != null && root.name.Contains("ScriptedRectParent"))
+                {
+                    Selection.objects = root.gameObject.transform.GetComponentsInChildren<ScriptedRect>();
+                }
+            }
         }
 #endif
     }
@@ -139,9 +166,8 @@ public class ScriptedObject : MonoBehaviour
 
     public virtual Vector3 RoundToGrid(Vector3 position)
     {
-        if (type == ObjectType.FLOOR)
+        if (type == ObjectType.FLOOR || type == ObjectType.RECT)
         {
-            //xOffset = (-.5f / xLength) * (xLength - 1);
             if (xLength % 2 == 0)
             {
                 xOffset = -.5f;
@@ -155,7 +181,6 @@ public class ScriptedObject : MonoBehaviour
         else if (type == ObjectType.WALL)
         {
             xOffset = 0;
-            //yOffset = (-.5f / yLength) * (yLength - 1) /*+ .5f / yLength*/;
             if (yLength % 2 == 0)
             {
                 yOffset = -.5f;

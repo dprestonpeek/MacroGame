@@ -4,26 +4,37 @@ using UnityEngine;
 
 public class CameraReposition : MonoBehaviour
 {
+    [Tooltip("This object should automatically be set to a script in the camera in-scene.")]
     [SerializeField]
     public CameraSettings camera;
 
-    [SerializeField]
-    private bool oneWayChange = false;
-
-    [SerializeField]
-    private bool invertTrigger = false;
-
-    [SerializeField]
-    private int oldFloor = 0;
-
+    [Tooltip("Desired floor level upon passing through the trigger.")]
     [SerializeField]
     private int newFloor = 0;
 
+    [Tooltip("Desired floor level upon returning back through the trigger.")]
+    [SerializeField]
+    private int oldFloor = 0;
+
+    [Tooltip("Indicates a one-way switch to newFloor. Even if the player passes back through the trigger, the floor will not be updated to oldFloor.")]
+    [SerializeField]
+    private bool oneWayChange = false;
+
+    [Tooltip("The camera will follow the player instead of snap to newFloor.")]
+    [SerializeField]
+    private bool playerAsNewFloor = false;
+
+    [Tooltip("Swaps the values of newFloor and oldFloor, effectively reversing the trigger.")]
+    [SerializeField]
+    private bool invertTrigger = false;
+
     private enum ScanTime { Enter, Exit, Stay }
+    [Tooltip("The exact moment the trigger is activated. Whether the player enters the trigger, exits the trigger, or while the player stays in the trigger.")]
     [SerializeField]
     private ScanTime scanTime = ScanTime.Enter;
 
     private enum Orientation { Vertical, Horizontal }
+    [Tooltip("Indicates the orientation of the trigger itself. The trigger should be positioned vertically like a wall if the player will be passing through horizontally.")]
     [SerializeField]
     private Orientation orientation = Orientation.Vertical;
 
@@ -31,8 +42,6 @@ public class CameraReposition : MonoBehaviour
     private Rigidbody currRb;
 
     //Exit right and down advance to new camera positions (think walking forward or falling)
-    //old and new floor can be reversed for the opposite effect
-
     private void ExitRight(int value)
     {
         camera.SetNewFloor(value);
@@ -59,6 +68,10 @@ public class CameraReposition : MonoBehaviour
         }
         if (currRb != null)
         {
+            if (playerAsNewFloor)
+            {
+                camera.SetPlayerAsFloor();
+            }
             if (orientation == Orientation.Vertical)
             {
                 if (currRb.velocity.x > 0)

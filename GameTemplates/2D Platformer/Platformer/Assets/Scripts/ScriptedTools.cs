@@ -20,6 +20,7 @@ public class ScriptedTools
     {
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
         floor.name = "ScriptedFloor";
+        floor.transform.parent = GameObject.FindGameObjectWithTag("Environment").transform;
 
         ScriptedFloor scriptedFloor = floor.AddComponent<ScriptedFloor>();
         GameObject blocks = new GameObject("Blocks");
@@ -35,6 +36,7 @@ public class ScriptedTools
     {
         GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
         wall.name = "ScriptedWall";
+        wall.transform.parent = GameObject.FindGameObjectWithTag("Environment").transform;
 
         ScriptedWall scriptedWall = wall.AddComponent<ScriptedWall>();
         GameObject blocks = new GameObject("Blocks");
@@ -46,17 +48,44 @@ public class ScriptedTools
         PrefabUtility.InstantiatePrefab(wall);
     }
 
-    public static void AddScriptedRect()
+    public static void AddScriptedRectParent()
+    {
+        GameObject rectParent = new GameObject("ScriptedRectParent");
+        rectParent.transform.parent = GameObject.FindGameObjectWithTag("Environment").transform;
+        rectParent.AddComponent<ScriptedRectParent>();
+        PrefabUtility.InstantiatePrefab(rectParent);
+        AddScriptedRect(rectParent);
+    }
+
+    public static void AddScriptedRect(GameObject parent)
+    {
+        AddScriptedRect(parent, null, null, -1, -1);
+    }
+
+    public static Object AddScriptedRect(GameObject parent, GameObject block, GameObject prevRect, float xLength, int rectHeight)
     {
         GameObject rect = GameObject.CreatePrimitive(PrimitiveType.Cube);
         rect.name = "ScriptedRect";
+        rect.transform.parent = parent.transform;
 
         ScriptedRect scriptedRect = rect.AddComponent<ScriptedRect>();
         GameObject blocks = new GameObject("Blocks");
         scriptedRect.blocksHolder = blocks;
         blocks.transform.parent = rect.transform;
+        rect.tag = "Rect";
+        scriptedRect.type = ScriptedObject.ObjectType.RECT;
 
-        PrefabUtility.InstantiatePrefab(rect);
+        if (xLength > -1 && block != null)
+        {
+            scriptedRect.block = block;
+            scriptedRect.xLength = xLength;
+            rect.transform.localScale = prevRect.transform.localScale;
+            rect.transform.localPosition = prevRect.transform.localPosition - (Vector3.up * (rectHeight - 1));
+        }
+
+        Object newRect = PrefabUtility.InstantiatePrefab(rect);
+        scriptedRect.UseRectTool();
+        return newRect;
     }
 #endif
 }

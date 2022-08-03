@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class MovementController : MonoBehaviour
 {
-    public enum Direction { Left, Right }
-    public Direction direction = Direction.Right;
-
     [SerializeField]
     public Rigidbody rb;
 
@@ -22,8 +19,9 @@ public class MovementController : MonoBehaviour
     [SerializeField]
     bool allowSkidding = true;
 
-
     private CapsuleCollider collider;
+    private enum Direction { Left, Right }
+    private Direction direction = Direction.Right;
 
     public bool Grounded = false;
     public bool Walled = false;
@@ -44,30 +42,40 @@ public class MovementController : MonoBehaviour
     private int airTurnCount = 0;
     private float rollSpeed = 0;
 
+    [Header("Entity Stats")]
+
+    [Tooltip("Maximum walk velocity")]
     [SerializeField]
     [Range(1, 10)]
     private int walkSpeed = 7;
+
+    [Tooltip("How quickly the velocity increases from 0 to walkSpeed when a joystick is connected.")]
     [SerializeField]
     [Range(1, 10)]
     public int joystickWalkAcceleration = 5;
+    [Tooltip("How quickly the velocity increases from 0 to walkSpeed when only a keyboard is connected.")]
     [SerializeField]
     [Range(1, 10)]
     public int keyboardWalkAcceleration = 1;
+    [Tooltip("The current amount of walk acceleration. This value is set by one of the 2 previous values.")]
+    [SerializeField]
     [Range(1, 10)]
     public int walkAcceleration = 5;
-    //[SerializeField]
-    //[Range(1, 10)]
-    //private int skidTolerance = 5;
+
+    [Tooltip("The velocity at which the roll mechanic is used.")]
     [SerializeField]
     [Range(1, 10)]
     private int rollTolerance = 1;
 
+    [Tooltip("The maximum height reached when jumping.")]
     [SerializeField]
     [Range(1, 10)]
     private int jumpHeight = 10;
+    [Tooltip("The walk speed while jumping or falling. (automatically decreases with each in-air x-direction change.")]
     [SerializeField]
     [Range(1, 10)]
     private int airwalkSpeed = 5;
+    [Tooltip("The speed at which the entity falls when jump input stops.")]
     [SerializeField]
     [Range(1, 15)]
     private int fallSpeed = 3;

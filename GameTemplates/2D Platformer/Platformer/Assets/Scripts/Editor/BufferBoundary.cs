@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BufferBoundary : MonoBehaviour
 {
-    public CameraBuffer camBuffer;
+    //public CameraBuffer camBuffer;
 
     private void OnTriggerEnter(Collider other)
     {

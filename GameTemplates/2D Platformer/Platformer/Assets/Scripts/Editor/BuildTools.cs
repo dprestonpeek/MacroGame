@@ -37,19 +37,13 @@ public class BuildTools
     [MenuItem("MacroBunny/Scripted Objects/Rect")]
     public static void AddScriptedRect()
     {
-        ScriptedTools.AddScriptedRect();
+        ScriptedTools.AddScriptedRectParent();
     }
 
     [MenuItem("MacroBunny/Add/Player")]
     public static void AddPlayer()
     {
         PlayerTools.AddPlayer();
-    }
-
-    [MenuItem("MacroBunny/Add/Camera Buffer")]
-    public static void AddCameraBuffer()
-    {
-        CameraTools.AddCameraBuffer();
     }
 
     [MenuItem("MacroBunny/Add/Camera Reposition Trigger")]

@@ -289,7 +289,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3678377315646882881}
   - component: {fileID: 5471673849791360062}
-  - component: {fileID: 581570695945124861}
   - component: {fileID: 3678377315646882883}
   m_Layer: 0
   m_Name: HammerSlammerEnemy
@@ -334,33 +333,21 @@ MonoBehaviour:
   anim: {fileID: 0}
   land: {fileID: 0}
   allowMovement: 1
+  allowSkidding: 1
   Grounded: 0
   Walled: 0
+  Juking: 0
   playerVelocity: {x: 0, y: 0}
   walkSpeed: 7
   joystickWalkAcceleration: 5
   keyboardWalkAcceleration: 1
   walkAcceleration: 5
-  skidTolerance: 5
   rollTolerance: 1
   jumpHeight: 10
   airwalkSpeed: 5
   fallSpeed: 3
-  moveAutomatically: 1
+  pace: 1
   faceRight: 1
---- !u!114 &581570695945124861
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3678377315646882882}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fefc8ffd6f36cd4680d03430cf27ab4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DoPace: 1
 --- !u!54 &3678377315646882883
 Rigidbody:
   m_ObjectHideFlags: 0

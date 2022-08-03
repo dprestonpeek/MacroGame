@@ -23,10 +23,15 @@ public class CameraSettings : MonoBehaviour
     [SerializeField]
     private float floor = 3;
 
+    private bool playerAsFloor = false;
+    private float playerFloorSpeed = .5f;
+    private float defaultYSpeed = .02f;
+
     // Start is called before the first frame update
     void Awake()
     {
         players = FindObjectsOfType<PlayerMovement>();
+        defaultYSpeed = camYSpeed;
     }
 
     // Update is called once per frame
@@ -41,6 +46,11 @@ public class CameraSettings : MonoBehaviour
     public void SetNewFloor(int newFloor)
     {
         floor = newFloor;
+    }
+
+    public void SetPlayerAsFloor()
+    {
+        playerAsFloor = true;
     }
 
     private void LateUpdate()
@@ -92,16 +102,15 @@ public class CameraSettings : MonoBehaviour
 
     Vector3 ClampToLimits(Vector3 position)
     {
-        //ceiling = players[0].newCeiling;
-        //floor = 0;// players[0].newFloor;
-
-        position.y = Mathf.Lerp(position.y, floor, camYSpeed);
-        //if (position.y > ceiling)
-        //{
-        //    position.y = ceiling - 3;
-        //}
-        //if (position.y < floor)
+        if (playerAsFloor)
         {
+            camYSpeed = playerFloorSpeed;
+            position.y = Mathf.Lerp(position.y, players[0].transform.position.y, camYSpeed);
+        }
+        else
+        {
+            camYSpeed = defaultYSpeed;
+            position.y = Mathf.Lerp(position.y, floor, camYSpeed);
         }
         return position;
     }

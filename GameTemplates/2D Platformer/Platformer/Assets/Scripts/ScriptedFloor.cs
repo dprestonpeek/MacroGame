@@ -18,10 +18,8 @@ public class ScriptedFloor : ScriptedObject
     public override void UseRectTool()
     {
         base.UseRectTool();
-
         transform.localScale = new Vector2(xLength, transform.localScale.y);
         transform.position = currPos;
-        //currScale = transform.localScale;
     }
 
     public override void Update()
@@ -77,14 +75,6 @@ public class ScriptedFloor : ScriptedObject
                 }
 
                 //center the tile if only 1 exists, otherwise align to grid
-                //if (xLength == 1)
-                //{
-                //    blocksHolder.transform.localPosition = new Vector3(0, 0, 0);
-                //}
-                //else if (xLength > 1)
-                //{
-                //    blocksHolder.transform.localPosition = new Vector3((-.5f / xLength) * (xLength - 1) /* + 1/xLength*/, 0, 0);
-                //}
                 blocksHolder.transform.localPosition = new Vector3((-.5f / xLength) * (xLength - 1) /* + 1/xLength*/, 0, 0);
             }
         }

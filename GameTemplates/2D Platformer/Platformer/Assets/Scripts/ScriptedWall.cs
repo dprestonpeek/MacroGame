@@ -21,7 +21,6 @@ public class ScriptedWall : ScriptedObject
 
         transform.localScale = new Vector2(transform.localScale.x, yLength);
         transform.position = currPos;
-        //currScale = transform.localScale;
     }
 
     public override void Update()
@@ -76,14 +75,7 @@ public class ScriptedWall : ScriptedObject
                 }
 
                 //center the tile if only 1 exists, otherwise align to grid
-                if (yLength == 1)
-                {
-                    blocksHolder.transform.localPosition = new Vector2(0, 0);
-                }
-                else if (yLength > 1)
-                {
-                    blocksHolder.transform.localPosition = new Vector2(0, (-.5f / yLength) * (yLength - 1));
-                }
+                blocksHolder.transform.localPosition = new Vector2(0, (-.5f / yLength) * (yLength - 1));
             }
         }
     }
