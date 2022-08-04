@@ -6,10 +6,10 @@ public class PlayerMovement : MovementController
 {
     private InputBridge.Input input;
 
-    public override void Update()
+    public override void FixedUpdate()
     {
         CheckInput();
-        base.Update();
+        base.FixedUpdate();
         CheckAndDoWalk(GameInput.movementAxes.x);
         CheckAndDoJump(GameInput.jump);
     }

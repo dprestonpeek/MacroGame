@@ -124,28 +124,37 @@ public class CameraReposition : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (scanTime != ScanTime.Enter)
+        if (other.GetComponentInParent<PlayerMovement>())
         {
-            return;
+            if (scanTime != ScanTime.Enter)
+            {
+                return;
+            }
+            RepositionCamera(other);
         }
-        RepositionCamera(other);
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (scanTime != ScanTime.Stay)
+        if (other.GetComponentInParent<PlayerMovement>())
         {
-            return;
+            if (scanTime != ScanTime.Stay)
+            {
+                return;
+            }
+            RepositionCamera(other);
         }
-        RepositionCamera(other);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (scanTime != ScanTime.Exit)
+        if (other.GetComponentInParent<PlayerMovement>())
         {
-            return;
+            if (scanTime != ScanTime.Exit)
+            {
+                return;
+            }
+            RepositionCamera(other);
         }
-        RepositionCamera(other);
     }
 }

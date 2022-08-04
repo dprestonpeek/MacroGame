@@ -17,11 +17,12 @@ public class MovementController : MonoBehaviour
     bool allowMovement = true;
 
     [SerializeField]
-    bool allowSkidding = true;
+    public bool allowSkidding = true;
 
-    private CapsuleCollider collider;
-    private enum Direction { Left, Right }
-    private Direction direction = Direction.Right;
+    public enum Direction { Left, Right }
+    public Direction direction = Direction.Right;
+
+    public bool IsFalling { get { return Falling; } set { IsFalling = value; } }
 
     public bool Grounded = false;
     public bool Walled = false;
@@ -34,6 +35,7 @@ public class MovementController : MonoBehaviour
     private bool Rolling = false;
     public bool Juking = false;
 
+    private CapsuleCollider collider;
 
     [SerializeField]
     private Vector2 playerVelocity;
@@ -47,7 +49,7 @@ public class MovementController : MonoBehaviour
     [Tooltip("Maximum walk velocity")]
     [SerializeField]
     [Range(1, 10)]
-    private int walkSpeed = 7;
+    public int walkSpeed = 7;
 
     [Tooltip("How quickly the velocity increases from 0 to walkSpeed when a joystick is connected.")]
     [SerializeField]
@@ -88,7 +90,7 @@ public class MovementController : MonoBehaviour
     }
 
     // Update is called once per frame
-    public virtual void Update()
+    public virtual void FixedUpdate()
     {
         if (allowMovement)
         {
@@ -102,11 +104,21 @@ public class MovementController : MonoBehaviour
         UpdateVelocity();
     }
 
+    public void SetDirection(Direction dir)
+    {
+        direction = dir;
+    }
+
     public void CheckAndDoWalk(float horizInputMovement)
+    {
+        CheckAndDoWalk(horizInputMovement, CalculateDirection(horizInputMovement));
+    }
+
+    public void CheckAndDoWalk(float horizInputMovement, Direction dir)
     {
         Direction oldDir = direction;
         float oldVel = Mathf.Abs(playerVelocity.x);
-        direction = CalculateDirection(horizInputMovement);
+        SetDirection(dir);
         if (oldDir != direction)
         {
             if (Jumping || Falling)
@@ -318,6 +330,11 @@ public class MovementController : MonoBehaviour
 
     public bool IsWalled()
     {
+        return IsWalled(.65f);
+    }
+
+    public bool IsWalled(float distance)
+    {
         RaycastHit hit;
         int layerMask = 1 << 8;
         layerMask = ~layerMask;
@@ -328,7 +345,6 @@ public class MovementController : MonoBehaviour
         Vector3[] rayPos = new Vector3[] { transform.position, offsetUp, offsetDown };
 
         float dir = CalculateDirection(direction);
-        float distance = .65f;
 
         // Does the ray intersect any objects
         foreach (Vector3 position in rayPos)
