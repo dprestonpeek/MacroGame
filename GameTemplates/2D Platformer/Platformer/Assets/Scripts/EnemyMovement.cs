@@ -83,7 +83,7 @@ public class EnemyMovement : MovementController
     public bool neutral = true;
     public bool interrupted = false;
     public bool provoked = false;
-    private bool pace = false;
+    public bool pace = false;
     private bool attacking = false;
     private bool stuck = false;
     private bool maybeStuck = false;
@@ -124,6 +124,7 @@ public class EnemyMovement : MovementController
         {
             pace = false;
         }
+        //the player has entered the enemy's interruption range
         if (interrupted && !provoked)
         {
             if (whenInterrupted != EnemyActions.NOTHING)
@@ -144,6 +145,7 @@ public class EnemyMovement : MovementController
 
             //WalkBackwards(walkSpeed / 4);
         }
+        //the player has exited the enemy's interruption range
         else if (!interrupted && !neutral)
         {
             allowSkidding = false;
@@ -152,6 +154,7 @@ public class EnemyMovement : MovementController
             pace = paceWhileWaiting;
             neutral = true;
         }
+        //the player has entered the enemy's provocation range
         if (provoked)
         {
             if (whenProvoked != EnemyActions.NOTHING)
