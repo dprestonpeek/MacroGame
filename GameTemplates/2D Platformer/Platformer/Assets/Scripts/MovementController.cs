@@ -41,7 +41,7 @@ public class MovementController : MonoBehaviour
     private Vector2 playerVelocity;
 
     private int jumpCount = 0;
-    private int airTurnCount = 0;
+    public int airTurnCount = 0;
     private float rollSpeed = 0;
 
     [Header("Entity Stats")]
@@ -71,7 +71,7 @@ public class MovementController : MonoBehaviour
 
     [Tooltip("The maximum height reached when jumping.")]
     [SerializeField]
-    [Range(1, 10)]
+    [Range(1, 20)]
     private int jumpHeight = 10;
     [Tooltip("The walk speed while jumping or falling. (automatically decreases with each in-air x-direction change.")]
     [SerializeField]
@@ -81,6 +81,10 @@ public class MovementController : MonoBehaviour
     [SerializeField]
     [Range(1, 15)]
     private int fallSpeed = 3;
+    [Tooltip("The speed at which the entity falls when jump input stops.")]
+    [SerializeField]
+    [Range(-15, -1)]
+    private int gravity = -10;
 
     // Start is called before the first frame update
     public virtual void Start()
@@ -96,6 +100,7 @@ public class MovementController : MonoBehaviour
         {
             Grounded = IsGrounded();
             Walled = IsWalled();
+            Gravity();
         }
     }
 
@@ -220,6 +225,11 @@ public class MovementController : MonoBehaviour
         {
             airTurnCount = 0;
         }
+    }
+
+    private void Gravity()
+    {
+        rb.AddForce(Vector3.up * gravity);
     }
 
     private void UpdateVelocity()
