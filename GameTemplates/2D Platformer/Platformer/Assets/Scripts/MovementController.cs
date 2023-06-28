@@ -27,13 +27,15 @@ public class MovementController : MonoBehaviour
     public bool Grounded = false;
     public bool Walled = false;
     private bool Walking = false;
-    private bool Jumping = false;
+    public bool Jumping = false;
     private bool Falling = false;
     private bool JumpHold = false;
-    private bool CanJump = false;
+    public bool CanJump = false;
+    public bool CanLedgeGrab = false;
     private bool Skidding = false;
     private bool Rolling = false;
     public bool Juking = false;
+    public bool LedgeGrabbing = false;
 
     private CapsuleCollider collider;
 
@@ -100,6 +102,15 @@ public class MovementController : MonoBehaviour
         {
             Grounded = IsGrounded();
             Walled = IsWalled();
+            if (CanLedgeGrab)
+            {
+                LedgeGrabbing = IsLedgeGrabbing();
+                if (LedgeGrabbing)
+                {
+                    LedgeGrab();
+                    CanJump = true;
+                }
+            }
             Gravity();
         }
     }
@@ -203,8 +214,9 @@ public class MovementController : MonoBehaviour
 
         if (jump)
         {
-            if (Grounded && !Jumping && !Falling && !JumpHold)
+            if ((Grounded || LedgeGrabbing) && !Jumping && !Falling && !JumpHold)
             {
+                StopLedgeGrabbing();
                 JumpHold = true;
                 Jump(jumpHeight);
                 if (playerVelocity.x == 0)
@@ -306,6 +318,36 @@ public class MovementController : MonoBehaviour
         rb.AddForce(Vector2.down * 5 * fallSpeed);
     }
 
+    private bool IsLedgeGrabbing()
+    {
+        if (CanLedgeGrab)
+        {
+            if (GameInput.bumpRight)
+            {
+                return true;
+            }
+        }
+        rb.isKinematic = false;
+        return false;
+    }
+
+    private void LedgeGrab()
+    {
+        if (LedgeGrabbing)
+        {
+            rb.velocity = Vector3.zero;
+            rb.isKinematic = true;
+            Jumping = false;
+            airTurnCount = 0;
+        }
+    }
+
+    private void StopLedgeGrabbing()
+    {
+        CanLedgeGrab = false;
+        rb.isKinematic = false;
+    }
+
     Direction CalculateDirection(float dir)
     {
         if (dir > 0)
@@ -359,7 +401,33 @@ public class MovementController : MonoBehaviour
         // Does the ray intersect any objects
         foreach (Vector3 position in rayPos)
         {
-            Debug.DrawRay(position, Vector2.right * dir * distance, Color.yellow);
+            //Check for ledgegrab
+            if (position == offsetUp && (!Grounded))
+            {
+                if (Physics.Raycast(position, Vector3.right * dir, out hit, distance+.25f, layerMask))
+                {
+                    //make sure the object to grab is actually a ledge
+                    Vector3 newPos = position;
+                    newPos.y += .35f;
+                    if (!Physics.Raycast(newPos, Vector3.right * dir, out hit, distance + .25f, layerMask))
+                    {
+                        Debug.DrawRay(newPos, Vector2.right * dir * (distance + .25f), Color.yellow);
+                        CanLedgeGrab = true;
+                    }
+                    else
+                    {
+                        CanLedgeGrab = false;
+                    }
+                }
+                else
+                {
+                    CanLedgeGrab = false;
+                }
+            }
+            else
+            {
+                CanLedgeGrab = false;
+            }
             if (Physics.Raycast(position, Vector3.right * dir, out hit, distance, layerMask))
             {
                 if (hit.transform.CompareTag("Floor") || hit.transform.CompareTag("Wall"))
