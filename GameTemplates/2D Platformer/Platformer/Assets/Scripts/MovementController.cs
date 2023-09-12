@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class MovementController : MonoBehaviour
 {
-    [SerializeField]
+    [HideInInspector]
     public Rigidbody rb;
 
-    [SerializeField]
     AnimationController anim;
 
     [SerializeField]
@@ -18,6 +17,8 @@ public class MovementController : MonoBehaviour
 
     [SerializeField]
     public bool allowSkidding = true;
+
+
 
     public enum Direction { Left, Right }
     public Direction direction = Direction.Right;
@@ -48,7 +49,32 @@ public class MovementController : MonoBehaviour
     private float rollSpeed = 0;
 
     [Header("Entity Stats")]
+    [Tooltip("Number of hit points the entity should have")]
+    [SerializeField]
+    [Range(0.01f, 100)]
+    public float hitPoints = 10;
 
+    [Tooltip("Amount of damage a natural projectile attack does")]
+    [SerializeField]
+    [Range(0.01f, 100)]
+    public float naturalProjectileDamage = 10;
+
+    [Tooltip("Amount of damage a limited projectile attack does")]
+    [SerializeField]
+    [Range(0.01f, 100)]
+    public float limitedProjectileDamage = 10;
+
+    [Tooltip("Amount of damage a natural melee attack does")]
+    [SerializeField]
+    [Range(0.01f, 100)]
+    public float naturalMeleeDamage = 10;
+
+    [Tooltip("Amount of damage a limited melee attack does")]
+    [SerializeField]
+    [Range(0.01f, 100)]
+    public float limitedMeleeDamage = 10;
+
+    [Header("Movement Stats")]
     [Tooltip("Maximum walk velocity")]
     [SerializeField]
     [Range(1, 10)]
@@ -94,6 +120,7 @@ public class MovementController : MonoBehaviour
     {
         collider = GetComponentInChildren<CapsuleCollider>();
         anim = GetComponentInChildren<AnimationController>();
+        rb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame

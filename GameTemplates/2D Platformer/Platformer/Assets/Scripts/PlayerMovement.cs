@@ -1,9 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMovement : MovementController
 {
+    [Header("UI Elements")]
+    [SerializeField]
+    private Slider healthBar;
+
     private InputBridge.Input input;
 
     public override void FixedUpdate()
