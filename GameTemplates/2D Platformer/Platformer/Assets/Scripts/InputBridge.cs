@@ -64,7 +64,6 @@ public class InputBridge : MonoBehaviour
             }
             catch(Exception e) 
             {
-                Debug.Log("Fuck!");
             }
             if (bridges.Length == gamepads.Length)
             {

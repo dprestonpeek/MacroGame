@@ -26,16 +26,17 @@ public class MovementController : MonoBehaviour
 
     public bool Grounded = false;
     public bool Walled = false;
+    public bool CanJump = false;
+    public bool Juking = false;
     private bool Walking = false;
-    public bool Jumping = false;
+    private bool Jumping = false;
     private bool Falling = false;
     private bool JumpHold = false;
-    public bool CanJump = false;
-    public bool CanLedgeGrab = false;
+    private bool CanLedgeGrab = false;
     private bool Skidding = false;
     private bool Rolling = false;
-    public bool Juking = false;
-    public bool LedgeGrabbing = false;
+    private bool LedgeGrabbing = false;
+    private bool LedgeJumped = false;
 
     private CapsuleCollider collider;
 
@@ -43,7 +44,7 @@ public class MovementController : MonoBehaviour
     private Vector2 playerVelocity;
 
     private int jumpCount = 0;
-    public int airTurnCount = 0;
+    private int airTurnCount = 0;
     private float rollSpeed = 0;
 
     [Header("Entity Stats")]
@@ -117,9 +118,14 @@ public class MovementController : MonoBehaviour
 
     public virtual void LateUpdate()
     {
+        //this is not so important, just for viewing purposes
         UpdateVelocity();
     }
 
+    /// <summary>
+    /// Force the entity to face a certain direction
+    /// </summary>
+    /// <param name="dir"></param>
     public void SetDirection(Direction dir)
     {
         direction = dir;
@@ -133,17 +139,20 @@ public class MovementController : MonoBehaviour
     public void CheckAndDoWalk(float horizInputMovement, Direction dir)
     {
         Direction oldDir = direction;
-        float oldVel = Mathf.Abs(playerVelocity.x);
+        //face the right way
         SetDirection(dir);
+        //if we change direction...
         if (oldDir != direction)
         {
+            //while in the air
             if (Jumping || Falling)
             {
                 airTurnCount++;
             }
             else
             {
-                if (oldVel >= walkSpeed - 1)
+                //skid if we're on the ground
+                if (allowSkidding)
                 {
                     Skidding = true;
                 }
@@ -152,33 +161,41 @@ public class MovementController : MonoBehaviour
 
         if (Falling)
         {
+            //update the direction of the animation in case we were backwards jumping
             anim.SetDirection(direction == Direction.Right);
+            //now that we're falling, we aren't ledgejumping anymore
+            LedgeJumped = false;
         }
 
+        //If we're walking at full speed
         if (Mathf.Abs(horizInputMovement) > .25f && !IsWalled())
         {
+            //save the roll speed in case we need that later
             rollSpeed = rb.velocity.x;
+            //set the direction the right way
             if (Grounded)
             {
                 anim.SetDirection(direction == Direction.Right);
             }
-            if (!Skidding)
+            if (Skidding)
+            {
+                anim.SetDirection(direction == Direction.Right);
+                //Slow to a stop
+                Skid();
+            }
+            else
             {
                 Walk(horizInputMovement);
                 Walking = true;
             }
-            else
-            {
-                anim.SetDirection(direction == Direction.Right);
-                Skid();
-                //Slow to a stop
-            }
         }
+        //save the roll info, wait til last second to see if roll is enabled
         else if (Mathf.Abs(rb.velocity.x) > 10 - rollTolerance)
         {
             Rolling = true;
             Roll();
         }
+        //we're not touching the joystick, stop moving
         else
         {
             Walking = false;
@@ -186,12 +203,18 @@ public class MovementController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Check if jump button is pressed, and jump if it is
+    /// </summary>
+    /// <param name="jump"></param>
     public void CheckAndDoJump(bool jump)
     {
+        //are we moving in an upwards direction?
         if (playerVelocity.y > .1f)
         {
             Jumping = true;
         }
+        //we are now falling
         else if (playerVelocity.y < -.1f)
         {
             Jumping = false;
@@ -202,61 +225,88 @@ public class MovementController : MonoBehaviour
                 CanJump = true;
             }
         }
+        //we hit ground
         else
         {
             Falling = false;
         }
 
+        //fall faster if we're not holding the jump button
         if (!JumpHold)
         {
             ForceFall();
         }
 
+        //the jump button has been pressed
         if (jump)
         {
+            //if we're allowed to jump (can't remember why we're not using CanJump?)
             if ((Grounded || LedgeGrabbing) && !Jumping && !Falling && !JumpHold)
             {
                 StopLedgeGrabbing();
                 JumpHold = true;
-                Jump(jumpHeight);
+                //Don't do a full jump if we're grabbing a ledge
+                if (LedgeGrabbing)
+                {
+                    Jump(jumpHeight / 1.5f);
+                    LedgeJumped = true;
+                }
+                else
+                {
+                    Jump(jumpHeight);
+                }
+                //we've crossed the center axis, we've changed direction
                 if (playerVelocity.x == 0)
                 {
                     airTurnCount++;
                 }
             }
         }
+        //we're no longer pressing the jump button
         else
         {
+            JumpHold = false;
+            //is this the first frame we're jumping on?
             if (Jumping && Grounded)
             {
                 Jumping = false;
             }
-            JumpHold = false;
         }
+        //reset airTurnCount when we hit ground
         if (Grounded && !JumpHold)
         {
             airTurnCount = 0;
         }
     }
 
+    /// <summary>
+    /// Responsible for the simulated gravity
+    /// </summary>
     private void Gravity()
     {
         rb.AddForce(Vector3.up * gravity);
     }
 
+    /// <summary>
+    /// This is just for visibility
+    /// </summary>
     private void UpdateVelocity()
     {
         playerVelocity = new Vector2(Mathf.Round(rb.velocity.x), Mathf.Round(rb.velocity.y));
     }
 
+    /// <summary>
+    /// Do the walk logic in a certain direction
+    /// </summary>
+    /// <param name="dir"></param>
     private void Walk(float dir)
     {
         float gradualWalkSpeed = Mathf.Lerp(Mathf.Abs(rb.velocity.x), walkSpeed, (float)walkAcceleration / 10);
         if (gradualWalkSpeed > 5)
         {
-            if (airTurnCount > 0)
+            if (airTurnCount > 1)
             {
-                gradualWalkSpeed = airwalkSpeed / airTurnCount;
+                gradualWalkSpeed = airwalkSpeed / (airTurnCount * 1.5f);
             }
             else
             {
@@ -270,22 +320,21 @@ public class MovementController : MonoBehaviour
         rb.velocity = newVelocity;
     }
 
+    /// <summary>
+    /// Do the skid logic
+    /// </summary>
     private void Skid()
     {
-        if (allowSkidding)
-        {
-            rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0, 1 / 2), rb.velocity.y);
-            if (Mathf.Abs(rb.velocity.x) <= .1f)
-            {
-                Skidding = false;
-            }
-        }
-        else
+        rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, 0, 1 / 2), rb.velocity.y);
+        if (Mathf.Abs(rb.velocity.x) <= .1f)
         {
             Skidding = false;
         }
     }
 
+    /// <summary>
+    /// Do the roll logic
+    /// </summary>
     private void Roll()
     {
         if (rollTolerance == 1)
@@ -294,14 +343,20 @@ public class MovementController : MonoBehaviour
         rb.velocity = new Vector2(rollSpeed, rb.velocity.y);
     }
 
+    /// <summary>
+    /// Add the jump force
+    /// </summary>
+    /// <param name="force"></param>
     private void Jump(float force)
     {
         rb.AddForce(Vector2.up * force, ForceMode.Impulse);
     }
 
+    /// <summary>
+    /// Things that should happen the moment the player hits the ground
+    /// </summary>
     private void HitGround()
     {
-        //jumpVelocity = 0;
         jumpCount = 0;
         if (Falling)
         {
@@ -309,8 +364,6 @@ public class MovementController : MonoBehaviour
         }
         Falling = false;
         Jumping = false;
-        //airTurnCount = 0;
-        //anim.Grounded();
     }
 
     void ForceFall()
@@ -344,6 +397,7 @@ public class MovementController : MonoBehaviour
 
     private void StopLedgeGrabbing()
     {
+        LedgeGrabbing = false;
         CanLedgeGrab = false;
         rb.isKinematic = false;
     }
